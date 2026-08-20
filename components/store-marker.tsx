@@ -10,9 +10,9 @@ type StoreMarkerProps = {
   isSelected?: boolean
 }
 
-/** How long the hop plays before the detail modal covers the map. */
-const HOP_DURATION_MS = 550
-const MODAL_OPEN_DELAY_MS = 480
+/** How long the walk plays before the detail modal covers the map. */
+const WALK_DURATION_MS = 700
+const MODAL_OPEN_DELAY_MS = 650
 
 const stateStyles = {
   normal: {
@@ -39,7 +39,7 @@ export function StoreMarker({ store, onClick, isSelected }: StoreMarkerProps) {
   const styles = stateStyles[state]
   const isAlert = state !== 'normal'
 
-  const [hopping, setHopping] = useState(false)
+  const [walking, setWalking] = useState(false)
   const timeoutsRef = useRef<number[]>([])
 
   useEffect(() => {
@@ -49,10 +49,10 @@ export function StoreMarker({ store, onClick, isSelected }: StoreMarkerProps) {
   }, [])
 
   function handleClick() {
-    // Let the marker hop in place before the modal covers the map, so the
-    // "character" movement is actually visible instead of instantly hidden.
-    setHopping(true)
-    timeoutsRef.current.push(window.setTimeout(() => setHopping(false), HOP_DURATION_MS))
+    // Let the marker "walk" in place before the modal covers the map, so the
+    // character movement is actually visible instead of instantly hidden.
+    setWalking(true)
+    timeoutsRef.current.push(window.setTimeout(() => setWalking(false), WALK_DURATION_MS))
     timeoutsRef.current.push(window.setTimeout(() => onClick(store), MODAL_OPEN_DELAY_MS))
   }
 
@@ -82,7 +82,7 @@ export function StoreMarker({ store, onClick, isSelected }: StoreMarkerProps) {
           'flex size-10 items-center justify-center border-4 pixel-shadow transition-transform duration-150 group-hover:-translate-y-1 group-active:translate-y-0',
           styles.box,
           styles.glow,
-          hopping && 'animate-marker-pop',
+          walking && 'animate-marker-walk',
           isSelected && 'outline outline-2 outline-offset-2 outline-primary',
         )}
       >

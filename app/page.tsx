@@ -127,6 +127,48 @@ export default function Page() {
     return () => clearInterval(timer)
   }, [triggerEvent])
 
+  const messagesRef = useRef(messages)
+  messagesRef.current = messages
+
+  const sendChatMessage = useCallback(async (text: string) => {
+    const userMsg: AgentMessage = { id: nextMessageId(), time: nowLabel(), text, role: 'user' }
+    const history = [...messagesRef.current, userMsg]
+    setMessages(history)
+    setIsThinking(true)
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          stores: storesRef.current,
+          messages: history.map((m) => ({
+            role: m.role === 'user' ? 'user' : 'assistant',
+            content: m.text,
+          })),
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? `chat api ${res.status}`)
+      setMessages((prev) => [
+        ...prev,
+        { id: nextMessageId(), time: nowLabel(), text: data.text || '(sin respuesta)', role: 'agent' },
+      ])
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: nextMessageId(),
+          time: nowLabel(),
+          text: 'No pude responder eso ahora mismo. Intenta de nuevo en un momento.',
+          role: 'agent',
+        },
+      ])
+    } finally {
+      setIsThinking(false)
+    }
+  }, [])
+
   const selectedStore = selectedStoreId
     ? stores.find((s) => s.id === selectedStoreId) ?? null
     : null
@@ -145,9 +187,18 @@ export default function Page() {
         isThinking={isThinking}
         onSelectStore={(s) => setSelectedStoreId(s.id)}
         onTrigger={triggerEvent}
+        onSendChat={sendChatMessage}
       />
       <StoreModal store={selectedStore} onClose={() => setSelectedStoreId(null)} />
-      <WelcomeModal open={showWelcome} onClose={closeWelcome} onTriggerDemo={triggerEvent} />
+      <WelcomeModal
+        open={showWelcome}
+        onClose={closeWelcome}
+        onTriggerDemo={triggerEvent}
+        onAskExample={(q) => {
+          void sendChatMessage(q)
+          closeWelcome()
+        }}
+      />
     </main>
   )
 }

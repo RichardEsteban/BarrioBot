@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
-import { Bot, ChevronRight, Sparkles } from 'lucide-react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { Bot, ChevronRight, Send, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getStoreState, type AgentMessage, type Store } from '@/lib/stores-data'
 
@@ -11,6 +11,7 @@ type AgentChatProps = {
   isThinking: boolean
   onSelectStore: (store: Store) => void
   onTrigger: () => void
+  onSendChat: (text: string) => void
 }
 
 export function AgentChat({
@@ -19,8 +20,10 @@ export function AgentChat({
   isThinking,
   onSelectStore,
   onTrigger,
+  onSendChat,
 }: AgentChatProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
+  const [input, setInput] = useState('')
 
   // Keep the latest bubble in view.
   useEffect(() => {
@@ -30,9 +33,17 @@ export function AgentChat({
     })
   }, [messages, isThinking])
 
+  function handleSend(e: FormEvent) {
+    e.preventDefault()
+    const text = input.trim()
+    if (!text || isThinking) return
+    setInput('')
+    onSendChat(text)
+  }
+
   return (
     <aside
-      aria-label="Notificaciones del agente"
+      aria-label="Chat del agente"
       className="flex h-[45%] w-full min-h-0 flex-col border-t-4 border-border bg-sidebar lg:h-full lg:w-[360px] lg:shrink-0 lg:border-l-4 lg:border-t-0"
     >
       {/* Header */}
@@ -66,12 +77,19 @@ export function AgentChat({
             ? stores.find((s) => s.id === msg.storeId)
             : undefined
           const storeState = store ? getStoreState(store) : undefined
+          const isUser = msg.role === 'user'
           return (
-            <div key={msg.id} className="animate-bubble-in flex flex-col gap-1">
-              <div className="max-w-[92%] border-2 border-border bg-card px-3 py-2 pixel-shadow">
-                <p className="font-sans text-lg leading-snug text-card-foreground">
-                  {msg.text}
-                </p>
+            <div
+              key={msg.id}
+              className={cn('animate-bubble-in flex flex-col gap-1', isUser && 'items-end')}
+            >
+              <div
+                className={cn(
+                  'max-w-[92%] border-2 border-border px-3 py-2 pixel-shadow',
+                  isUser ? 'bg-primary/15 text-foreground' : 'bg-card text-card-foreground',
+                )}
+              >
+                <p className="font-sans text-lg leading-snug">{msg.text}</p>
                 {store && (
                   <button
                     type="button"
@@ -104,13 +122,29 @@ export function AgentChat({
         {isThinking && <TypingBubble />}
       </div>
 
-      {/* Footer status */}
+      {/* Footer: status + input */}
       <footer className="border-t-4 border-border bg-popover px-4 py-2">
-        <p className="font-sans text-base text-muted-foreground">
-          {isThinking
-            ? 'El agente está escribiendo…'
-            : `${messages.length} notificaciones recibidas`}
+        <p className="mb-2 font-sans text-base text-muted-foreground">
+          {isThinking ? 'El agente está escribiendo…' : `${messages.length} mensajes`}
         </p>
+        <form onSubmit={handleSend} className="flex items-center gap-2">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Pregúntale al agente…"
+            disabled={isThinking}
+            className="min-w-0 flex-1 border-2 border-border bg-input px-2 py-1.5 font-sans text-lg text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none disabled:opacity-60"
+          />
+          <button
+            type="submit"
+            disabled={isThinking || !input.trim()}
+            aria-label="Enviar mensaje"
+            className="flex size-9 shrink-0 items-center justify-center border-2 border-primary bg-primary/15 text-primary transition-colors hover:bg-primary/25 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <Send className="size-4" strokeWidth={2.5} aria-hidden="true" />
+          </button>
+        </form>
       </footer>
     </aside>
   )

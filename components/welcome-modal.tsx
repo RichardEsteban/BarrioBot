@@ -1,15 +1,21 @@
 'use client'
 
 import { useEffect } from 'react'
-import { MapPin, Sparkles, X, Zap } from 'lucide-react'
+import { MapPin, MessageCircle, Sparkles, X, Zap } from 'lucide-react'
 
 type WelcomeModalProps = {
   open: boolean
   onClose: () => void
   onTriggerDemo: () => void
+  onAskExample: (question: string) => void
 }
 
-export function WelcomeModal({ open, onClose, onTriggerDemo }: WelcomeModalProps) {
+const exampleQuestions = [
+  '¿Dónde me conviene comprar aceite ahora mismo?',
+  '¿Qué tiendas tienen ofertas esta semana?',
+]
+
+export function WelcomeModal({ open, onClose, onTriggerDemo, onAskExample }: WelcomeModalProps) {
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
@@ -80,6 +86,26 @@ export function WelcomeModal({ open, onClose, onTriggerDemo }: WelcomeModalProps
               <span className="text-foreground">&ldquo;Simular alerta&rdquo;</span> junto al chat
               para forzar un evento cuando quieras.
             </p>
+          </div>
+
+          <div className="flex gap-3">
+            <MessageCircle className="mt-0.5 size-5 shrink-0 text-primary" strokeWidth={2.5} aria-hidden="true" />
+            <p className="font-sans text-lg leading-snug text-muted-foreground">
+              También puedes escribirle lo que quieras. Prueba con una de estas:
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            {exampleQuestions.map((q) => (
+              <button
+                key={q}
+                type="button"
+                onClick={() => onAskExample(q)}
+                className="border-2 border-border bg-secondary px-3 py-2 text-left font-sans text-lg text-foreground transition-colors hover:border-primary hover:bg-primary/15"
+              >
+                {q}
+              </button>
+            ))}
           </div>
 
           <button

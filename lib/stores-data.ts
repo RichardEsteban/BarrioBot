@@ -187,4 +187,6 @@ export type AgentMessage = {
   storeId?: string
   time: string
   text: string
+  /** Who "said" this bubble; missing/'agent' both render as the agent. */
+  role?: 'user' | 'agent'
 }
