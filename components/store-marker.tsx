@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { getStoreState, type Store } from '@/lib/stores-data'
 
@@ -8,6 +9,10 @@ type StoreMarkerProps = {
   onClick: (store: Store) => void
   isSelected?: boolean
 }
+
+/** How long the hop plays before the detail modal covers the map. */
+const HOP_DURATION_MS = 550
+const MODAL_OPEN_DELAY_MS = 480
 
 const stateStyles = {
   normal: {
@@ -34,10 +39,27 @@ export function StoreMarker({ store, onClick, isSelected }: StoreMarkerProps) {
   const styles = stateStyles[state]
   const isAlert = state !== 'normal'
 
+  const [hopping, setHopping] = useState(false)
+  const timeoutsRef = useRef<number[]>([])
+
+  useEffect(() => {
+    return () => {
+      timeoutsRef.current.forEach((id) => window.clearTimeout(id))
+    }
+  }, [])
+
+  function handleClick() {
+    // Let the marker hop in place before the modal covers the map, so the
+    // "character" movement is actually visible instead of instantly hidden.
+    setHopping(true)
+    timeoutsRef.current.push(window.setTimeout(() => setHopping(false), HOP_DURATION_MS))
+    timeoutsRef.current.push(window.setTimeout(() => onClick(store), MODAL_OPEN_DELAY_MS))
+  }
+
   return (
     <button
       type="button"
-      onClick={() => onClick(store)}
+      onClick={handleClick}
       style={{ left: `${store.x}%`, top: `${store.y}%` }}
       className="group absolute z-10 -translate-x-1/2 -translate-y-1/2 focus:outline-none"
       aria-label={`${store.name} — ${store.category}${
@@ -60,7 +82,8 @@ export function StoreMarker({ store, onClick, isSelected }: StoreMarkerProps) {
           'flex size-10 items-center justify-center border-4 pixel-shadow transition-transform duration-150 group-hover:-translate-y-1 group-active:translate-y-0',
           styles.box,
           styles.glow,
-          isSelected && 'animate-marker-pop outline outline-2 outline-offset-2 outline-primary',
+          hopping && 'animate-marker-pop',
+          isSelected && 'outline outline-2 outline-offset-2 outline-primary',
         )}
       >
         <Icon className="size-5" strokeWidth={2.5} aria-hidden="true" />

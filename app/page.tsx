@@ -33,12 +33,22 @@ export default function Page() {
   const [messages, setMessages] = useState<AgentMessage[]>(() => [
     {
       id: nextMessageId(),
-      time: nowLabel(),
+      // Left blank on purpose: formatting the time here would run once on the
+      // server and again on the client, and locale-formatted times can differ
+      // between those two environments and trigger a hydration mismatch.
+      time: '',
       text: `Buenos días. Iniciando el monitoreo de precios del vecindario. ${initialStores.length} tiendas bajo seguimiento.`,
     },
   ])
   const [isThinking, setIsThinking] = useState(false)
   const [showWelcome, setShowWelcome] = useState(false)
+
+  // Fill in the first message's timestamp only after mount, client-side only.
+  useEffect(() => {
+    setMessages((prev) =>
+      prev.map((m, i) => (i === 0 ? { ...m, time: nowLabel() } : m)),
+    )
+  }, [])
 
   useEffect(() => {
     const seen = window.localStorage.getItem(WELCOME_STORAGE_KEY)
