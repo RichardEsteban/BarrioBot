@@ -6,8 +6,7 @@ de precio, avisa en un chat en vivo y resalta la tienda en el mapa; al hacer
 clic se ve el detalle completo (precio anterior, precio actual, variación y
 recomendación).
 
-Proyecto para la hackathon **The Next Craft** (Hack0), track de
-automatización con agentes.
+
 
 ## Cómo funciona el agente
 
