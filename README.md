@@ -1,33 +1,52 @@
 # BarrioBot
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [v0](https://v0.app).
+Panel interactivo estilo pixel-art que simula un agente vigilando los
+precios de una zona piloto de tiendas del barrio. Cuando detecta un cambio
+de precio, avisa en un chat en vivo y resalta la tienda en el mapa; al hacer
+clic se ve el detalle completo (precio anterior, precio actual, variación y
+recomendación).
 
-## Built with v0
+Proyecto para la hackathon **The Next Craft** (Hack0), track de
+automatización con agentes.
 
-This repository is linked to a [v0](https://v0.app) project. You can continue developing by visiting the link below -- start new chats to make changes, and v0 will push commits directly to this repo. Every merge to `main` will automatically deploy.
+## Cómo funciona el agente
 
-[Continue working on v0 →](https://v0.app/chat/projects/prj_cFRrBMcHUOB6wtKv8lFjZ7MoNqBC)
+- `lib/stores-data.ts` define las tiendas, su catálogo de productos y la
+  simulación de eventos de precio (`pickPriceEvent`).
+- Cada ~16 segundos (o al presionar **"Simular alerta"** en el panel del
+  agente) se genera un evento de cambio de precio y se envía a
+  `app/api/agent/route.ts`.
+- Esa ruta intenta redactar el mensaje y la recomendación con un LLM real
+  (Anthropic u OpenAI, según qué API key esté configurada). Si no hay ninguna
+  key configurada, o la llamada falla, cae automáticamente en un generador de
+  texto local (`templateResult`) — así la demo nunca se rompe en vivo.
+- El estado visual de cada tienda (normal / alerta de subida / oferta) se
+  calcula siempre a partir del precio real (`getStoreState`), nunca se marca
+  a mano, para que el mapa y el chat nunca queden desincronizados.
+
+## Configurar el LLM (opcional)
+
+Copia `.env.example` a `.env.local` y define una de las dos:
+
+```bash
+ANTHROPIC_API_KEY=sk-ant-...
+# o
+OPENAI_API_KEY=sk-...
+```
+
+En Vercel: Project Settings → Environment Variables, agrega la misma
+variable y vuelve a desplegar.
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Stack
 
-## Learn More
-
-To learn more, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-- [v0 Documentation](https://v0.app/docs) - learn about v0 and how to use it.
+Next.js 16 (App Router) + React 19 + Tailwind CSS 4 + shadcn/ui, desplegado
+en Vercel. Generado inicialmente con [v0](https://v0.app).
