@@ -6,6 +6,7 @@ import { getStoreState, type Store } from '@/lib/stores-data'
 type StoreMarkerProps = {
   store: Store
   onClick: (store: Store) => void
+  isSelected?: boolean
 }
 
 const stateStyles = {
@@ -27,7 +28,7 @@ const stateStyles = {
   },
 } as const
 
-export function StoreMarker({ store, onClick }: StoreMarkerProps) {
+export function StoreMarker({ store, onClick, isSelected }: StoreMarkerProps) {
   const Icon = store.icon
   const state = getStoreState(store)
   const styles = stateStyles[state]
@@ -59,6 +60,7 @@ export function StoreMarker({ store, onClick }: StoreMarkerProps) {
           'flex size-10 items-center justify-center border-4 pixel-shadow transition-transform duration-150 group-hover:-translate-y-1 group-active:translate-y-0',
           styles.box,
           styles.glow,
+          isSelected && 'animate-marker-pop outline outline-2 outline-offset-2 outline-primary',
         )}
       >
         <Icon className="size-5" strokeWidth={2.5} aria-hidden="true" />

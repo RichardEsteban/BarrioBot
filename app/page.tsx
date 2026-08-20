@@ -11,9 +11,11 @@ import {
 import { NeighborhoodMap } from '@/components/neighborhood-map'
 import { AgentChat } from '@/components/agent-chat'
 import { StoreModal } from '@/components/store-modal'
+import { WelcomeModal } from '@/components/welcome-modal'
 
 /** How often the agent "checks" prices on its own, in ms. */
 const SIMULATION_INTERVAL_MS = 16000
+const WELCOME_STORAGE_KEY = 'barriobot-welcome-seen'
 
 let messageCounter = 0
 function nextMessageId() {
@@ -36,6 +38,17 @@ export default function Page() {
     },
   ])
   const [isThinking, setIsThinking] = useState(false)
+  const [showWelcome, setShowWelcome] = useState(false)
+
+  useEffect(() => {
+    const seen = window.localStorage.getItem(WELCOME_STORAGE_KEY)
+    if (!seen) setShowWelcome(true)
+  }, [])
+
+  function closeWelcome() {
+    setShowWelcome(false)
+    window.localStorage.setItem(WELCOME_STORAGE_KEY, '1')
+  }
 
   // Read the latest stores inside the interval/callback without re-creating it every render.
   const storesRef = useRef(stores)
@@ -110,7 +123,12 @@ export default function Page() {
 
   return (
     <main className="flex h-dvh w-full flex-col overflow-hidden lg:flex-row">
-      <NeighborhoodMap stores={stores} onSelectStore={(s) => setSelectedStoreId(s.id)} />
+      <NeighborhoodMap
+        stores={stores}
+        onSelectStore={(s) => setSelectedStoreId(s.id)}
+        selectedStoreId={selectedStoreId}
+        onOpenHelp={() => setShowWelcome(true)}
+      />
       <AgentChat
         messages={messages}
         stores={stores}
@@ -119,6 +137,7 @@ export default function Page() {
         onTrigger={triggerEvent}
       />
       <StoreModal store={selectedStore} onClose={() => setSelectedStoreId(null)} />
+      <WelcomeModal open={showWelcome} onClose={closeWelcome} onTriggerDemo={triggerEvent} />
     </main>
   )
 }

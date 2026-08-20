@@ -1,15 +1,23 @@
 'use client'
 
 import Image from 'next/image'
+import { HelpCircle } from 'lucide-react'
 import { getStoreState, type Store } from '@/lib/stores-data'
 import { StoreMarker } from './store-marker'
 
 type NeighborhoodMapProps = {
   stores: Store[]
   onSelectStore: (store: Store) => void
+  selectedStoreId?: string | null
+  onOpenHelp: () => void
 }
 
-export function NeighborhoodMap({ stores, onSelectStore }: NeighborhoodMapProps) {
+export function NeighborhoodMap({
+  stores,
+  onSelectStore,
+  selectedStoreId,
+  onOpenHelp,
+}: NeighborhoodMapProps) {
   const alertCount = stores.filter((s) => getStoreState(s) !== 'normal').length
 
   return (
@@ -28,11 +36,21 @@ export function NeighborhoodMap({ stores, onSelectStore }: NeighborhoodMapProps)
             Monitor de precios del vecindario
           </span>
         </div>
-        <div className="flex items-center gap-2 border-2 border-alert-up/60 bg-alert-up/15 px-2 py-1">
-          <span className="size-2 rounded-full bg-alert-up" aria-hidden="true" />
-          <span className="font-pixel text-[8px] uppercase text-foreground">
-            {alertCount} alertas
-          </span>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onOpenHelp}
+            aria-label="Ver indicaciones"
+            className="flex size-7 items-center justify-center border-2 border-border bg-secondary text-foreground transition-colors hover:bg-muted"
+          >
+            <HelpCircle className="size-4" strokeWidth={2.5} aria-hidden="true" />
+          </button>
+          <div className="flex items-center gap-2 border-2 border-alert-up/60 bg-alert-up/15 px-2 py-1">
+            <span className="size-2 rounded-full bg-alert-up" aria-hidden="true" />
+            <span className="font-pixel text-[8px] uppercase text-foreground">
+              {alertCount} alertas
+            </span>
+          </div>
         </div>
       </header>
 
@@ -52,7 +70,12 @@ export function NeighborhoodMap({ stores, onSelectStore }: NeighborhoodMapProps)
         </div>
 
         {stores.map((store) => (
-          <StoreMarker key={store.id} store={store} onClick={onSelectStore} />
+          <StoreMarker
+            key={store.id}
+            store={store}
+            onClick={onSelectStore}
+            isSelected={store.id === selectedStoreId}
+          />
         ))}
 
         {/* Legend */}
