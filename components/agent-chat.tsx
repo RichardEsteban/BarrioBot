@@ -1,31 +1,26 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-import { Bot, ChevronRight } from 'lucide-react'
+import { useEffect, useRef } from 'react'
+import { Bot, ChevronRight, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { agentMessages, stores, type Store } from '@/lib/stores-data'
+import { getStoreState, type AgentMessage, type Store } from '@/lib/stores-data'
 
 type AgentChatProps = {
+  messages: AgentMessage[]
+  stores: Store[]
+  isThinking: boolean
   onSelectStore: (store: Store) => void
+  onTrigger: () => void
 }
 
-export function AgentChat({ onSelectStore }: AgentChatProps) {
-  const [visibleCount, setVisibleCount] = useState(1)
-  const [typing, setTyping] = useState(true)
+export function AgentChat({
+  messages,
+  stores,
+  isThinking,
+  onSelectStore,
+  onTrigger,
+}: AgentChatProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
-
-  // Reveal notifications one after another, like an incoming chat.
-  useEffect(() => {
-    if (visibleCount >= agentMessages.length) {
-      setTyping(false)
-      return
-    }
-    setTyping(true)
-    const t = setTimeout(() => {
-      setVisibleCount((c) => c + 1)
-    }, 1600)
-    return () => clearTimeout(t)
-  }, [visibleCount])
 
   // Keep the latest bubble in view.
   useEffect(() => {
@@ -33,9 +28,7 @@ export function AgentChat({ onSelectStore }: AgentChatProps) {
       top: scrollRef.current.scrollHeight,
       behavior: 'smooth',
     })
-  }, [visibleCount, typing])
-
-  const shown = agentMessages.slice(0, visibleCount)
+  }, [messages, isThinking])
 
   return (
     <aside
@@ -52,6 +45,15 @@ export function AgentChat({ onSelectStore }: AgentChatProps) {
           <p className="font-pixel text-[10px] uppercase text-foreground">Agente</p>
           <p className="font-sans text-base leading-none text-alert-down">en línea</p>
         </div>
+        <button
+          type="button"
+          onClick={onTrigger}
+          disabled={isThinking}
+          className="ml-auto flex items-center gap-1.5 border-2 border-primary/60 bg-primary/15 px-2 py-1 font-pixel text-[7px] uppercase text-primary transition-colors hover:bg-primary/25 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <Sparkles className="size-3" strokeWidth={3} aria-hidden="true" />
+          Simular alerta
+        </button>
       </header>
 
       {/* Messages */}
@@ -59,10 +61,11 @@ export function AgentChat({ onSelectStore }: AgentChatProps) {
         ref={scrollRef}
         className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-4"
       >
-        {shown.map((msg) => {
+        {messages.map((msg) => {
           const store = msg.storeId
             ? stores.find((s) => s.id === msg.storeId)
             : undefined
+          const storeState = store ? getStoreState(store) : undefined
           return (
             <div key={msg.id} className="animate-bubble-in flex flex-col gap-1">
               <div className="max-w-[92%] border-2 border-border bg-card px-3 py-2 pixel-shadow">
@@ -75,11 +78,11 @@ export function AgentChat({ onSelectStore }: AgentChatProps) {
                     onClick={() => onSelectStore(store)}
                     className={cn(
                       'mt-2 flex w-full items-center justify-between gap-2 border-2 px-2 py-1 font-pixel text-[7px] uppercase transition-colors',
-                      store.state === 'alert-up' &&
+                      storeState === 'alert-up' &&
                         'border-alert-up/60 bg-alert-up/15 text-foreground hover:bg-alert-up/25',
-                      store.state === 'alert-down' &&
+                      storeState === 'alert-down' &&
                         'border-alert-down/60 bg-alert-down/15 text-foreground hover:bg-alert-down/25',
-                      store.state === 'normal' &&
+                      storeState === 'normal' &&
                         'border-border bg-secondary text-foreground hover:bg-muted',
                     )}
                   >
@@ -98,15 +101,15 @@ export function AgentChat({ onSelectStore }: AgentChatProps) {
           )
         })}
 
-        {typing && <TypingBubble />}
+        {isThinking && <TypingBubble />}
       </div>
 
       {/* Footer status */}
       <footer className="border-t-4 border-border bg-popover px-4 py-2">
         <p className="font-sans text-base text-muted-foreground">
-          {typing
+          {isThinking
             ? 'El agente está escribiendo…'
-            : `${agentMessages.length} notificaciones recibidas`}
+            : `${messages.length} notificaciones recibidas`}
         </p>
       </footer>
     </aside>

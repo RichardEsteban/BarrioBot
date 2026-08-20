@@ -1,15 +1,16 @@
 'use client'
 
 import Image from 'next/image'
-import { stores, type Store } from '@/lib/stores-data'
+import { getStoreState, type Store } from '@/lib/stores-data'
 import { StoreMarker } from './store-marker'
 
 type NeighborhoodMapProps = {
+  stores: Store[]
   onSelectStore: (store: Store) => void
 }
 
-export function NeighborhoodMap({ onSelectStore }: NeighborhoodMapProps) {
-  const alertCount = stores.filter((s) => s.state !== 'normal').length
+export function NeighborhoodMap({ stores, onSelectStore }: NeighborhoodMapProps) {
+  const alertCount = stores.filter((s) => getStoreState(s) !== 'normal').length
 
   return (
     <section

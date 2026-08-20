@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import { X, TrendingUp, TrendingDown, Minus, Lightbulb } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { priceChangePct, type Store } from '@/lib/stores-data'
+import { getStoreState, priceChangePct, type Store } from '@/lib/stores-data'
 
 type StoreModalProps = {
   store: Store | null
@@ -24,8 +24,9 @@ export function StoreModal({ store, onClose }: StoreModalProps) {
 
   const Icon = store.icon
   const pct = priceChangePct(store)
-  const isUp = pct > 0.05
-  const isDown = pct < -0.05
+  const state = getStoreState(store)
+  const isUp = state === 'alert-up'
+  const isDown = state === 'alert-down'
 
   const trendColor = isUp
     ? 'text-alert-up'
@@ -152,7 +153,7 @@ function PriceBox({
         {label}
       </p>
       <p className={cn('font-sans text-3xl leading-none', className)}>
-        {value.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
+        {value.toLocaleString('es-PE', { style: 'currency', currency: 'PEN' })}
       </p>
     </div>
   )

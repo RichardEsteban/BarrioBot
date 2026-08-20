@@ -1,17 +1,14 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import type { Store } from '@/lib/stores-data'
+import { getStoreState, type Store } from '@/lib/stores-data'
 
 type StoreMarkerProps = {
   store: Store
   onClick: (store: Store) => void
 }
 
-const stateStyles: Record<
-  Store['state'],
-  { box: string; glow: string; label: string }
-> = {
+const stateStyles = {
   normal: {
     box: 'bg-secondary text-muted-foreground border-border',
     glow: '',
@@ -28,12 +25,13 @@ const stateStyles: Record<
     label:
       'bg-alert-down text-alert-down-foreground border-alert-down-foreground/40',
   },
-}
+} as const
 
 export function StoreMarker({ store, onClick }: StoreMarkerProps) {
   const Icon = store.icon
-  const styles = stateStyles[store.state]
-  const isAlert = store.state !== 'normal'
+  const state = getStoreState(store)
+  const styles = stateStyles[state]
+  const isAlert = state !== 'normal'
 
   return (
     <button
@@ -70,9 +68,9 @@ export function StoreMarker({ store, onClick }: StoreMarkerProps) {
       <span
         className={cn(
           'mx-auto -mt-1 block size-2.5 rotate-45',
-          store.state === 'alert-up' && 'bg-alert-up',
-          store.state === 'alert-down' && 'bg-alert-down',
-          store.state === 'normal' && 'bg-secondary',
+          state === 'alert-up' && 'bg-alert-up',
+          state === 'alert-down' && 'bg-alert-down',
+          state === 'normal' && 'bg-secondary',
         )}
         aria-hidden="true"
       />
@@ -83,13 +81,13 @@ export function StoreMarker({ store, onClick }: StoreMarkerProps) {
           <span
             className={cn(
               'absolute inline-flex size-full animate-ping rounded-full opacity-70',
-              store.state === 'alert-up' ? 'bg-alert-up' : 'bg-alert-down',
+              state === 'alert-up' ? 'bg-alert-up' : 'bg-alert-down',
             )}
           />
           <span
             className={cn(
               'relative inline-flex size-3 rounded-full border-2 border-background',
-              store.state === 'alert-up' ? 'bg-alert-up' : 'bg-alert-down',
+              state === 'alert-up' ? 'bg-alert-up' : 'bg-alert-down',
             )}
           />
         </span>
