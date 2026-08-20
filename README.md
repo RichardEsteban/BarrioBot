@@ -95,5 +95,3 @@ Desplegado en Vercel, conectado al repositorio de GitHub — cada push a
 
 ---
 
-Next.js 16 (App Router) + React 19 + Tailwind CSS 4 + shadcn/ui. Generado
-inicialmente con [v0](https://v0.app).
