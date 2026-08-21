@@ -88,10 +88,4 @@ pnpm dev
 
 Abre [http://localhost:3000](http://localhost:3000).
 
-## Despliegue
-
-Desplegado en Vercel, conectado al repositorio de GitHub — cada push a
-`main` dispara un deployment nuevo automáticamente.
-
----
 
